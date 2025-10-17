@@ -1,0 +1,1 @@
+# industry_second_part
