@@ -1,0 +1,969 @@
+/* --- General Layout & Variables --- */
+:root {
+  --map-bg: #f4f7f9;
+  --section-bg: #ffffff;
+  --section-border: #d1d9e2;
+  --text-dark: #2c3e50;
+  --text-light: #8492a6;
+  --accent-blue: #3498db;
+  --valid-green: #2ecc71;
+  --invalid-red: #e74c3c;
+  --training-yellow: #f1c40f;
+}
+
+body {
+  margin: 0;
+  background-color: #f0f2f5;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.factory-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* --- Top Level & Production Controls --- */
+.top-level-controls {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  z-index: 500;
+  display: flex;
+  gap: 10px;
+}
+
+.production-controls {
+  position: sticky;
+  top: 20px;
+  left: 20px;
+  z-index: 200;
+  display: flex;
+  gap: 15px;
+}
+
+.production-controls button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.production-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-start {
+  background-color: var(--valid-green);
+  color: white;
+}
+.btn-start:hover:not(:disabled) {
+  background-color: #27ae60;
+}
+
+.btn-stop {
+  background-color: var(--invalid-red);
+  color: white;
+}
+.btn-stop:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+/* --- Factory Map & Canvas --- */
+.factory-map-viewport {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: var(--map-bg);
+  position: relative;
+}
+
+.factory-map-canvas {
+  position: relative;
+  width: 2800px;
+  height: 2000px;
+  padding: 50px;
+}
+
+/* --- Material Animation --- */
+.material {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-image: url("trolley.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 100;
+  transition: transform 1.5s ease-in-out, opacity 0.5s;
+  opacity: 0;
+  pointer-events: none;
+}
+/* --- Worker Card Styles --- */
+.assigned-worker {
+  position: relative;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 8px;
+  margin: 6px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 140px;
+}
+
+.worker-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.worker-name {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.skill-status {
+  font-size: 12px;
+  color: #555;
+}
+
+/* --- Progress Bar --- */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #ddd;
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2ecc71;
+  border-radius: 4px;
+  transition: width 0.2s ease-in-out;
+}
+
+/* --- AI Button --- */
+.ai-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.ai-btn:hover {
+  background: #2980b9;
+}
+
+/* --- Machine Box Vibrate --- */
+.machine-box.vibrating {
+  animation: vibrate 0.3s infinite;
+}
+
+@keyframes vibrate {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(1px, -1px); }
+  50% { transform: translate(-1px, 1px); }
+  75% { transform: translate(1px, 1px); }
+  100% { transform: translate(0,0); }
+}
+
+/* --- Machine Pod --- */
+.machine-pod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 6px;
+  position: relative;
+}
+
+/* --- Machine Label --- */
+.machine-label {
+  font-size: 11px;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* --- Training Worker Special --- */
+.assigned-worker.training {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+}
+
+/* --- Factory Map Canvas --- */
+.factory-map-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 600px;
+  background: #eef2f7;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* --- Trolley --- */
+.trolley {
+  width: 28px;
+  height: 28px;
+  transition: left 0.3s ease, top 0.3s ease;
+  z-index: 1;
+  position: absolute;
+}
+
+/* --- Section Wrapper --- */
+.section-wrapper {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  margin: 12px;
+  padding: 8px;
+  background: #fdfdfd;
+}
+
+/* --- Section Header --- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.section-title-group h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.rec-indicator {
+  font-size: 10px;
+  color: #e74c3c;
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+/* --- Machines Row --- */
+.machines-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+
+
+.trolley {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  transition: all 1.2s ease-in-out; /* smooth movement between sections */
+  z-index: 10;
+}
+
+/* --- Section Styling --- */
+.section-wrapper {
+  position: absolute;
+  background: var(--section-bg);
+  border: 2px solid var(--section-border);
+  border-radius: 16px;
+  padding: 20px 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+  min-height: 350px;
+  min-width: 800px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.section-wrapper h2 {
+  margin: 0 0 25px 0;
+  color: var(--text-dark);
+  font-size: 1.8rem;
+}
+
+/* === NEW: Production Flow Layout === */
+#section-raw-materials { top: 100px; left: 100px; }
+#section-welding       { top: 100px; left: 1000px; }
+#section-assembly      { top: 550px; left: 1000px; }
+#section-painting      { top: 550px; left: 100px; }
+#section-quality       { top: 1000px; left: 100px; }
+#section-packaging     { top: 1000px; left: 1000px; }
+/* --- THIS IS THE NEW STYLE FOR THE TRAINING SECTION --- */
+#section-training      { top: 1450px; left: 100px; border-color: var(--training-yellow); }
+#section-exporting     { top: 1450px; left: 1000px; }
+
+
+/* === Flow Arrows (No changes needed here) === */
+.section-wrapper::after,
+.section-wrapper::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  background: #a8b8c8;
+}
+#section-raw-materials::after  { top: 50%; left: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-raw-materials::before { content: ''; background: transparent; top: 50%; left: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+#section-welding::after  { top: 100%; left: 50%; width: 8px; height: 100px; transform: translateX(-50%); }
+#section-welding::before { content: ''; background: transparent; top: calc(100% + 100px); left: 50%; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid #a8b8c8; transform: translateX(-50%); }
+
+#section-assembly::after  { top: 50%; right: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-assembly::before { content: ''; background: transparent; top: 50%; right: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+#section-painting::after  { top: 100%; left: 50%; width: 8px; height: 100px; transform: translateX(-50%); }
+#section-painting::before { content: ''; background: transparent; top: calc(100% + 100px); left: 50%; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid #a8b8c8; transform: translateX(-50%); }
+
+#section-quality::after  { top: 50%; left: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-quality::before { content: ''; background: transparent; top: 50%; left: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+#section-packaging::after  { top: 50%; left: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-packaging::before { content: ''; background: transparent; top: 50%; left: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+
+/* --- Machine Pod & Styling --- */
+.machines-row {
+  display: flex;
+  gap: 40px;
+  justify-content: space-around;
+  flex-grow: 1;
+}
+.machine-pod {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 10px;
+}
+.machine-box {
+  border-radius: 12px;
+  width: 180px;
+  height: 180px;
+  background: #fbfdff;
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.machine-icon {
+  width: 50px;
+  height: 50px;
+  background-color: #d1d9e2;
+  mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M19.48 12.35c.53-.78.53-1.8 0-2.58l-1.48-2.18c-.33-.48-.88-.73-1.45-.73H15c-.55 0-1-.45-1-1V5.5c0-.68-.36-1.3-.92-1.62L10.9 2.1c-.78-.44-1.74-.44-2.52 0l-2.18 1.23C5.59 3.7 5.2 4.3 5.2 5V7c0 .55-.45 1-1 1H2.5c-.57 0-1.12.25-1.45.73L-.43 10.9c-.44.78-.44 1.74 0 2.52l1.23 2.18c.37.62.98 1 1.65 1H4c.55 0 1 .45 1 1v2.5c0 .57.25 1.12.73 1.45l2.18 1.48c.78.53 1.8.53 2.58 0l2.18-1.48c.48-.33.73-.88.73-1.45V17c0-.55.45-1 1-1h2.5c.68 0 1.3-.36 1.62-.92l1.23-2.18zM12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>');
+  mask-size: contain;
+  margin-bottom: 10px;
+}
+.machine-label {
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 1rem;
+  text-align: center;
+}
+
+@keyframes vibrate { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1px, 0); } 50% { transform: translate(1px, 0); } 75% { transform: translate(0, 1px); } }
+.machine-box.vibrating { animation: vibrate 0.15s linear infinite; }
+
+/* --- Assigned Worker Styling --- */
+.assigned-worker {
+  position: absolute;
+  top: -20px;
+  background-color: #fff;
+  border: 1px solid var(--section-border);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 180px;
+  box-sizing: border-box;
+  z-index: 20;
+}
+.worker-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.worker-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.skill-status {
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--text-light);
+}
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  transition: width 0.1s linear;
+}
+
+/* Specific styles for different worker types */
+.assigned-worker.skilled .progress-fill {
+  background-color: var(--valid-green);
+}
+
+.assigned-worker.training {
+  border-left: 5px solid var(--training-yellow);
+}
+.assigned-worker.training .progress-fill {
+  background-color: var(--training-yellow);
+}
+.assigned-worker.training .skill-status {
+  color: var(--training-yellow);
+  font-weight: bold;
+}
+/* --- Modal & Form Styles (Add this to the end of your CSS file) --- */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%; /* For smaller screens */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: var(--text-dark);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.skills-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4f7f9;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.checkbox-label:hover {
+  border-color: var(--accent-blue);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+/* --- Button Styles (You may have this already, but ensure it's there) --- */
+.btn-primary {
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+.btn-secondary {
+  background-color: #ecf0f1;
+  color: var(--text-dark);
+  border: 1px solid #bdc3c7;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: #d2d7d9;
+}
+/* --- General Layout & Variables --- */
+:root {
+  --map-bg: #f4f7f9;
+  --section-bg: #ffffff;
+  --section-border: #d1d9e2;
+  --text-dark: #2c3e50;
+  --text-light: #8492a6;
+  --accent-blue: #3498db;
+  --valid-green: #2ecc71;
+  --invalid-red: #e74c3c;
+  --training-yellow: #f1c40f;
+}
+
+body {
+  margin: 0;
+  background-color: #f0f2f5;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.factory-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* --- Top Level & Production Controls --- */
+.top-level-controls {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  z-index: 500;
+  display: flex;
+  gap: 10px;
+}
+
+.production-controls {
+  position: sticky;
+  top: 20px;
+  left: 20px;
+  z-index: 200;
+  display: flex;
+  gap: 15px;
+}
+
+.production-controls button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.production-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-start {
+  background-color: var(--valid-green);
+  color: white;
+}
+.btn-start:hover:not(:disabled) {
+  background-color: #27ae60;
+}
+
+.btn-stop {
+  background-color: var(--invalid-red);
+  color: white;
+}
+.btn-stop:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+/* --- Factory Map & Canvas --- */
+.factory-map-viewport {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: var(--map-bg);
+  position: relative;
+}
+
+.factory-map-canvas {
+  position: relative;
+  width: 2800px;
+  height: 2000px;
+  padding: 50px;
+}
+
+/* --- Material Animation --- */
+.material {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  z-index: 50;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: transform 1.5s ease-in-out, opacity 0.5s;
+  opacity: 0;
+}
+
+/* --- Section Styling --- */
+.section-wrapper {
+  position: absolute;
+  background: var(--section-bg);
+  border: 2px solid var(--section-border);
+  border-radius: 16px;
+  padding: 20px 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+  min-height: 350px;
+  min-width: 800px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* --- NEW STYLES FOR THE SECTION HEADER --- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-header h2 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 1.8rem;
+}
+
+.rec-indicator {
+  color: var(--invalid-red);
+  font-weight: bold;
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+}
+
+.rec-indicator::before {
+  content: '●';
+  margin-right: 6px;
+  font-size: 1.1rem;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.section-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.6rem;
+  padding: 5px;
+  line-height: 1;
+  color: var(--text-light);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(1.15);
+  color: var(--text-dark);
+}
+/* --- END OF NEW HEADER STYLES --- */
+
+
+/* === Production Flow Layout === */
+#section-raw-materials { top: 100px; left: 100px; }
+#section-welding       { top: 100px; left: 1000px; }
+#section-assembly      { top: 550px; left: 1000px; }
+#section-painting      { top: 550px; left: 100px; }
+#section-quality       { top: 1000px; left: 100px; }
+#section-packaging     { top: 1000px; left: 1000px; }
+#section-training      { top: 1450px; left: 100px; border-color: var(--training-yellow); }
+#section-exporting     { top: 1450px; left: 1000px; }
+
+
+/* === Flow Arrows === */
+.section-wrapper::after,
+.section-wrapper::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  background: #a8b8c8;
+}
+#section-raw-materials::after  { top: 50%; left: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-raw-materials::before { content: ''; background: transparent; top: 50%; left: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+#section-welding::after  { top: 100%; left: 50%; width: 8px; height: 100px; transform: translateX(-50%); }
+#section-welding::before { content: ''; background: transparent; top: calc(100% + 100px); left: 50%; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid #a8b8c8; transform: translateX(-50%); }
+
+#section-assembly::after  { top: 50%; right: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-assembly::before { content: ''; background: transparent; top: 50%; right: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+#section-painting::after  { top: 100%; left: 50%; width: 8px; height: 100px; transform: translateX(-50%); }
+#section-painting::before { content: ''; background: transparent; top: calc(100% + 100px); left: 50%; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 12px solid #a8b8c8; transform: translateX(-50%); }
+
+#section-quality::after  { top: 50%; left: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-quality::before { content: ''; background: transparent; top: 50%; left: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+#section-packaging::after  { top: 50%; left: 100%; width: 100px; height: 8px; transform: translateY(-50%); }
+#section-packaging::before { content: ''; background: transparent; top: 50%; left: calc(100% + 100px); border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 12px solid #a8b8c8; transform: translateY(-50%); }
+
+
+/* --- Machine Pod & Styling --- */
+.machines-row {
+  display: flex;
+  gap: 40px;
+  justify-content: space-around;
+  flex-grow: 1;
+}
+.machine-pod {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 10px;
+}
+.machine-box {
+  border-radius: 12px;
+  width: 180px;
+  height: 180px;
+  background: #fbfdff;
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.machine-icon {
+  width: 50px;
+  height: 50px;
+  background-color: #d1d9e2;
+  mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M19.48 12.35c.53-.78.53-1.8 0-2.58l-1.48-2.18c-.33-.48-.88-.73-1.45-.73H15c-.55 0-1-.45-1-1V5.5c0-.68-.36-1.3-.92-1.62L10.9 2.1c-.78-.44-1.74-.44-2.52 0l-2.18 1.23C5.59 3.7 5.2 4.3 5.2 5V7c0 .55-.45 1-1 1H2.5c-.57 0-1.12.25-1.45.73L-.43 10.9c-.44.78-.44 1.74 0 2.52l1.23 2.18c.37.62.98 1 1.65 1H4c.55 0 1 .45 1 1v2.5c0 .57.25 1.12.73 1.45l2.18 1.48c.78.53 1.8.53 2.58 0l2.18-1.48c.48-.33.73-.88.73-1.45V17c0-.55.45-1 1-1h2.5c.68 0 1.3-.36 1.62-.92l1.23-2.18zM12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>');
+  mask-size: contain;
+  margin-bottom: 10px;
+}
+.machine-label {
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 1rem;
+  text-align: center;
+}
+
+@keyframes vibrate { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1px, 0); } 50% { transform: translate(1px, 0); } 75% { transform: translate(0, 1px); } }
+.machine-box.vibrating { animation: vibrate 0.15s linear infinite; }
+
+/* --- Assigned Worker Styling --- */
+.assigned-worker {
+  position: absolute;
+  top: -20px;
+  background-color: #fff;
+  border: 1px solid var(--section-border);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 180px;
+  box-sizing: border-box;
+  z-index: 20;
+}
+.worker-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.worker-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.skill-status {
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--text-light);
+}
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  transition: width 0.1s linear;
+}
+
+/* Specific styles for different worker types */
+.assigned-worker.skilled .progress-fill {
+  background-color: var(--valid-green);
+}
+
+.assigned-worker.training {
+  border-left: 5px solid var(--training-yellow);
+}
+.assigned-worker.training .progress-fill {
+  background-color: var(--training-yellow);
+}
+.assigned-worker.training .skill-status {
+  color: var(--training-yellow);
+  font-weight: bold;
+}
+/* --- Modal & Form Styles --- */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: var(--text-dark);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.skills-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4f7f9;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.checkbox-label:hover {
+  border-color: var(--accent-blue);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-primary {
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+.btn-secondary {
+  background-color: #ecf0f1;
+  color: var(--text-dark);
+  border: 1px solid #bdc3c7;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+  background-color: #d2d7d9;
+}
